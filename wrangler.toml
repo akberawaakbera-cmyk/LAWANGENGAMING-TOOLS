@@ -1,13 +1,1 @@
-name = 'lawangengaming-tools'
-main = 'src/index.js'
-compatibility_date = '2026-10-21'
-
-[assets]
-directory = './'
-binding = 'ASSETS'
-run_worker_first = true
-
-[[d1_databases]]
-binding = 'DB'
-database_name = 'lawangweb'
-database_id = '53fdb4dc-e3c4-45b1-ba4e-fb4ccc4e97fa'
+hhh
