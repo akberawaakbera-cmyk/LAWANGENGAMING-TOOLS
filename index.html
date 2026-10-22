@@ -1,59 +1,792 @@
-export default {
-async fetch(request, env) {
-const url = new URL(request.url);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0b0f">
+<meta name="description" content="LAWANGEN FF gaming tools: sensitivity optimizer, headshot practice, HUD planner and nickname generator for Free Fire MAX.">
+<title>LAWANGEN FF — Gaming Tools</title>
 
-// CORS-free, same-origin API health check
-if (url.pathname === "/api/health") {
-  if (!env.DB) {
-    return Response.json(
-      {
-        success: false,
-        database: "binding_missing",
-        message: "D1 binding DB is not configured."
-      },
-      { status: 500 }
-    );
+<style>
+:root{
+  --bg:#09090d;
+  --panel:#121218;
+  --panel2:#191920;
+  --red:#ff3038;
+  --orange:#ff782e;
+  --text:#f5f5f7;
+  --muted:#a5a5b2;
+  --border:rgba(255,255,255,.09);
+  --green:#39dc91;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse at 10% 0%,rgba(255,48,56,.12),transparent 35%),
+    radial-gradient(ellipse at 90% 30%,rgba(255,120,46,.07),transparent 30%),
+    var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  line-height:1.6;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+.container{width:min(1120px,92%);margin:auto}
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(9,9,13,.9);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.nav{
+  min-height:72px;display:flex;align-items:center;
+  justify-content:space-between;gap:16px;
+}
+.brand{font-size:21px;font-weight:950;letter-spacing:.6px}
+.brand span{color:var(--red)}
+.nav-links{display:flex;gap:22px;align-items:center}
+.nav-links a{font-size:13px;color:var(--muted)}
+.nav-links a:hover{color:white}
+.menu-btn{
+  display:none;background:var(--panel2);color:white;
+  border:1px solid var(--border);border-radius:9px;padding:8px 12px;
+}
+.hero{padding:82px 0 58px}
+.hero-grid{
+  display:grid;grid-template-columns:1.2fr .8fr;
+  gap:36px;align-items:center;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,48,56,.1);border:1px solid rgba(255,48,56,.25);
+  color:#ff898d;padding:7px 12px;border-radius:100px;
+  font-size:12px;font-weight:800;
+}
+h1{font-size:clamp(38px,6vw,68px);line-height:1.04;margin:20px 0}
+h1 span{
+  background:linear-gradient(90deg,var(--red),var(--orange));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p{color:var(--muted);max-width:590px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.btn{
+  border:0;border-radius:11px;padding:12px 17px;
+  font-weight:850;display:inline-flex;align-items:center;
+  justify-content:center;gap:8px;transition:.2s;
+}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn-primary{color:white;background:linear-gradient(100deg,var(--red),var(--orange))}
+.btn-secondary{background:var(--panel2);color:white;border:1px solid var(--border)}
+.hero-card,.card{
+  background:linear-gradient(145deg,rgba(28,28,37,.96),rgba(15,15,21,.96));
+  border:1px solid var(--border);border-radius:20px;
+  padding:23px;box-shadow:0 20px 65px rgba(0,0,0,.2);
+}
+.hero-card{position:relative;overflow:hidden}
+.hero-card:before{
+  content:"";position:absolute;width:190px;height:190px;
+  background:rgba(255,48,56,.13);filter:blur(65px);
+  top:-75px;right:-55px;
+}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.stat{
+  padding:17px;background:rgba(255,255,255,.035);
+  border:1px solid var(--border);border-radius:13px;
+}
+.stat strong{display:block;font-size:25px}
+.stat small{color:var(--muted)}
+.section{padding:38px 0 52px}
+.section-heading{margin-bottom:25px}
+.eyebrow{
+  color:var(--orange);text-transform:uppercase;
+  letter-spacing:2px;font-weight:900;font-size:11px;
+}
+h2{font-size:clamp(26px,4vw,38px);margin:5px 0 8px}
+.section-heading p,.muted{color:var(--muted)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card h3{margin:0 0 8px;font-size:20px}
+.card p{color:var(--muted);font-size:14px}
+label{display:block;font-size:13px;font-weight:750;margin-bottom:7px}
+.field{margin:17px 0}
+select,input[type="text"]{
+  width:100%;padding:12px 13px;background:#0d0d13;color:white;
+  border:1px solid #30303b;border-radius:10px;outline:none;
+}
+select:focus,input:focus{border-color:var(--red)}
+input[type="range"]{width:100%;accent-color:var(--red)}
+.range-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted)}
+.range-value{color:white;font-weight:900}
+.preset-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.preset{
+  padding:9px 12px;border-radius:9px;border:1px solid var(--border);
+  background:#1b1b23;color:#d7d7e0;font-size:12px;font-weight:800;
+}
+.preset.active{border-color:var(--red);color:#ff777d;background:rgba(255,48,56,.1)}
+.result-box{
+  margin-top:20px;padding:17px;border:1px solid rgba(255,48,56,.24);
+  background:rgba(255,48,56,.045);border-radius:14px;
+}
+.result-header{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.status-pill{
+  border-radius:100px;background:rgba(57,220,145,.1);
+  color:var(--green);padding:5px 9px;font-size:11px;font-weight:900;
+}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}
+.setting{
+  background:#0d0d13;border:1px solid var(--border);
+  padding:12px;border-radius:11px;
+}
+.setting span{display:block;color:var(--muted);font-size:12px}
+.setting strong{font-size:25px}
+.note{
+  font-size:12px!important;color:#b7b7c3!important;
+  border-left:3px solid var(--orange);padding-left:11px;margin-top:14px;
+}
+.check-list{display:grid;gap:10px;margin-top:15px}
+.check-item{
+  display:flex;align-items:center;gap:11px;
+  padding:12px;border:1px solid var(--border);
+  background:#0d0d13;border-radius:10px;
+}
+.check-item input{accent-color:var(--red);width:18px;height:18px}
+.check-item span{font-size:13px}
+.progress-track{height:7px;background:#292932;border-radius:20px;overflow:hidden;margin:13px 0}
+.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--orange));transition:.3s}
+.step{
+  display:flex;gap:13px;padding:15px 0;border-bottom:1px solid var(--border);
+}
+.step:last-child{border-bottom:0}
+.step-number{
+  flex-shrink:0;width:32px;height:32px;border-radius:10px;
+  background:rgba(255,48,56,.12);color:#ff777d;
+  display:grid;place-items:center;font-weight:950;
+}
+.step p{margin:3px 0 0}
+.tool-card{min-height:170px}
+.tool-icon{font-size:28px;margin-bottom:10px}
+footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);font-size:12px}
+.footer-row{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);
+  opacity:0;pointer-events:none;background:#f5f5f7;color:#111;
+  border-radius:12px;padding:12px 18px;font-size:13px;font-weight:850;
+  z-index:999;transition:.25s;max-width:90%;text-align:center;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.small{font-size:12px;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--border);margin:18px 0}
+@media(max-width:780px){
+  .hero-grid,.grid-2{grid-template-columns:1fr}
+  .hero{padding-top:55px}
+  .grid-3{grid-template-columns:1fr}
+  .nav-links{
+    display:none;position:absolute;left:4%;right:4%;top:66px;
+    padding:17px;background:#131319;border:1px solid var(--border);
+    border-radius:13px;flex-direction:column;align-items:stretch;gap:14px;
   }
-  try {
-    const result = await env.DB
-      .prepare("SELECT 1 AS connected")
-      .first();
-    return Response.json({
-      success: true,
-      app: "LAWANGEN FF",
-      database: result?.connected === 1
-        ? "connected"
-        : "query_failed"
-    });
-  } catch (error) {
-    return Response.json(
-      {
-        success: false,
-        database: "query_failed",
-        message: "Unable to query the D1 database."
-      },
-      { status: 500 }
-    );
-  }
+  .nav-links.open{display:flex}
+  .menu-btn{display:block}
 }
-// All other API routes
-if (url.pathname.startsWith("/api/")) {
-  return Response.json(
-    {
-      success: false,
-      error: "API endpoint not implemented yet."
-    },
-    { status: 404 }
-  );
+@media(max-width:420px){
+  .settings-grid{grid-template-columns:1fr 1fr}
+  .hero-card,.card{padding:17px}
+  .btn{padding:11px 13px;font-size:13px}
 }
-// Serve the existing index.html and other repository assets
-if (env.ASSETS) {
-  return env.ASSETS.fetch(request);
-}
-return new Response(
-  "LAWANGEN FF: ASSETS binding is missing.",
-  { status: 500 }
-);
+</style>
+</head>
 
-}
+<body>
+<header>
+  <div class="container nav">
+    <a class="brand" href="#home">LAWANGEN <span>FF</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Open navigation">☰</button>
+    <nav class="nav-links" id="navLinks">
+      <a href="#optimizer">Sensitivity</a>
+      <a href="#hud">HUD Planner</a>
+      <a href="#training">Training</a>
+      <a href="#tools">Tools</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <div class="container hero-grid">
+    <div>
+      <span class="badge">🎯 FREE FIRE MAX • FAN-MADE TOOLS</span>
+      <h1>Play Smarter.<br><span>Aim Better.</span></h1>
+      <p>
+        Build a personalized sensitivity starting point, plan your HUD,
+        and practice your drag-headshot technique with LAWANGEN FF.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#optimizer">🎯 Optimize Sensitivity</a>
+        <a class="btn btn-secondary" href="#training">Start Training →</a>
+      </div>
+      <p class="small">No injector • No game-file changes • Manual in-game setup</p>
+    </div>
+
+    <div class="hero-card">
+      <span class="eyebrow">YOUR PRACTICE TOOLKIT</span>
+      <h2>Improve one setting at a time.</h2>
+      <p>Use a consistent profile, test it in Training Ground, and make small adjustments.</p>
+      <div class="stat-grid">
+        <div class="stat"><strong>01</strong><small>Build your profile</small></div>
+        <div class="stat"><strong>02</strong><small>Set up your HUD</small></div>
+        <div class="stat"><strong>03</strong><small>Practice your drag</small></div>
+        <div class="stat"><strong>04</strong><small>Fine-tune gradually</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="optimizer">
+<div class="container">
+  <div class="section-heading">
+    <span class="eyebrow">Sensitivity Lab</span>
+    <h2>Headshot Optimizer</h2>
+    <p>Generate a starting profile for your device and play style. These are recommendations, not guaranteed headshot settings.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>⚙️ Player Profile</h3>
+      <p>Choose your device and how you normally play.</p>
+
+      <div class="field">
+        <label for="device">Device</label>
+        <select id="device">
+          <option value="iphone14pm">iPhone 14 Pro Max</option>
+          <option value="iphone">Other iPhone</option>
+          <option value="android">Android Phone</option>
+          <option value="tablet">Tablet / iPad</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="style">Sensitivity Style</label>
+        <select id="style">
+          <option value="headshot">High Drag Headshot</option>
+          <option value="balanced">Balanced</option>
+          <option value="rush">Rush / Close Range</option>
+          <option value="steady">Steady Aim</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="experience">Experience</label>
+        <select id="experience">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate" selected>Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="fingers">Finger Layout</label>
+        <select id="fingers">
+          <option value="2">2 Fingers</option>
+          <option value="3" selected>3 Fingers</option>
+          <option value="4">4 Fingers</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="touch">Touch / Drag Comfort</label>
+        <div class="range-row"><span>Slow / Controlled</span><span class="range-value" id="touchLabel">3 / 5</span><span>Fast / Quick</span></div>
+        <input id="touch" type="range" min="1" max="5" value="3">
+      </div>
+
+      <div class="field">
+        <label for="fireSize">Fire Button Size</label>
+        <div class="range-row"><span>Small</span><span class="range-value" id="fireLabel">48%</span><span>Large</span></div>
+        <input id="fireSize" type="range" min="35" max="65" value="48">
+      </div>
+
+      <div class="preset-row">
+        <button class="preset active" data-preset="headshot">🔥 High Drag</button>
+        <button class="preset" data-preset="balanced">⚖️ Balanced</button>
+        <button class="preset" data-preset="steady">🎯 Steady</button>
+      </div>
+
+      <button class="btn btn-primary" id="generateBtn" style="width:100%">Generate My Settings</button>
+      <button class="btn btn-secondary" id="saveBtn" style="width:100%;margin-top:9px">💾 Save My Profile</button>
+      <button class="btn btn-secondary" id="loadBtn" style="width:100%;margin-top:9px">↩ Load Saved Profile</button>
+    </div>
+
+    <div class="card">
+      <div class="result-header">
+        <div>
+          <span class="eyebrow">Recommended Starting Values</span>
+          <h3 style="margin-top:6px">Your Sensitivity</h3>
+        </div>
+        <span class="status-pill">MANUAL SETUP</span>
+      </div>
+      <p>Use these values as a starting point. If your game uses a different sensitivity scale, adjust to the scale shown in your settings.</p>
+
+      <div class="settings-grid" id="settingsGrid">
+        <div class="setting"><span>General</span><strong id="generalVal">180</strong></div>
+        <div class="setting"><span>Red Dot</span><strong id="redDotVal">170</strong></div>
+        <div class="setting"><span>2× Scope</span><strong id="scope2Val">160</strong></div>
+        <div class="setting"><span>4× Scope</span><strong id="scope4Val">145</strong></div>
+        <div class="setting"><span>Sniper Scope</span><strong id="sniperVal">85</strong></div>
+        <div class="setting"><span>Free Look</span><strong id="freeLookVal">145</strong></div>
+      </div>
+
+      <hr>
+      <h3>🎮 HUD Recommendations</h3>
+      <div class="settings-grid">
+        <div class="setting"><span>Fire Button</span><strong id="fireRec">48%</strong></div>
+        <div class="setting"><span>Finger Layout</span><strong id="fingerRec">3 fingers</strong></div>
+      </div>
+
+      <button class="btn btn-primary" id="copyBtn" style="width:100%">📋 Copy Settings</button>
+      <p class="note">
+        This website cannot directly change Free Fire MAX settings, inject code,
+        or guarantee headshots. Enter values manually in the game, then test them.
+      </p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="section" id="hud">
+<div class="container">
+  <div class="section-heading">
+    <span class="eyebrow">Control Setup</span>
+    <h2>HUD Planner</h2>
+    <p>Check each step as you configure your controls. Your progress is saved on this device.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>📱 Setup Checklist</h3>
+      <div class="progress-track"><div class="progress-bar" id="hudProgress"></div></div>
+      <p id="progressText">0 of 6 completed</p>
+      <div class="check-list" id="hudChecklist">
+        <label class="check-item"><input type="checkbox" data-hud="movement"><span>Keep movement joystick comfortable and easy to reach.</span></label>
+        <label class="check-item"><input type="checkbox" data-hud="fire"><span>Place the fire button where your thumb can drag naturally.</span></label>
+        <label class="check-item"><input type="checkbox" data-hud="scope"><span>Place the scope button within comfortable reach.</span></label>
+        <label class="check-item"><input type="checkbox" data-hud="crouch"><span>Keep crouch and jump separate enough to avoid mis-taps.</span></label>
+        <label class="check-item"><input type="checkbox" data-hud="gloo"><span>Position the gloo wall button for quick, reliable access.</span></label>
+        <label class="check-item"><input type="checkbox" data-hud="heal"><span>Make healing and weapon switching easy to reach.</span></label>
+      </div>
+      <button class="btn btn-secondary" id="resetHud" style="margin-top:16px">Reset Checklist</button>
+    </div>
+
+    <div class="card">
+      <h3>💡 HUD Tips</h3>
+      <div class="step"><div class="step-number">1</div><div><strong>Two-finger layout</strong><p>Keep the layout simple and avoid placing important buttons too close together.</p></div></div>
+      <div class="step"><div class="step-number">2</div><div><strong>Three-finger layout</strong><p>Try using your index finger for firing while your thumbs handle movement and camera aim.</p></div></div>
+      <div class="step"><div class="step-number">3</div><div><strong>Four-finger layout</strong><p>Separate actions across fingers only if you can press them consistently without strain.</p></div></div>
+      <p class="note">There is no single best HUD for everyone. Comfort and repeatability matter more than copying a pro player's layout.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="section" id="training">
+<div class="container">
+  <div class="section-heading">
+    <span class="eyebrow">Practice Routine</span>
+    <h2>Headshot Training Guide</h2>
+    <p>Practice accuracy before chasing speed. Change only one setting at a time.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="step"><div class="step-number">1</div><div><strong>Warm up for 3–5 minutes</strong><p>Use the Training Ground to get comfortable with your current sensitivity.</p></div></div>
+      <div class="step"><div class="step-number">2</div><div><strong>Start with chest-level aim</strong><p>Place your crosshair around the upper chest before attempting a controlled upward drag.</p></div></div>
+      <div class="step"><div class="step-number">3</div><div><strong>Use a short, controlled drag</strong><p>Drag gently upward while firing. Avoid swiping so far that the crosshair passes over the target.</p></div></div>
+      <div class="step"><div class="step-number">4</div><div><strong>Review your misses</strong><p>If your aim passes above the head, reduce General or Red Dot slightly. If it stays too low, increase one setting slightly.</p></div></div>
+      <div class="step"><div class="step-number">5</div><div><strong>Repeat consistently</strong><p>Test the same weapon and distance for several minutes before changing your profile.</p></div></div>
+    </div>
+
+    <div class="card">
+      <h3>🎯 Quick Adjustment Guide</h3>
+      <div class="step"><div class="step-number">↑</div><div><strong>Aim keeps going above the head</strong><p>Lower General or Red Dot by 3–5 points, then test again.</p></div></div>
+      <div class="step"><div class="step-number">↓</div><div><strong>Aim stays below the head</strong><p>Raise General or Red Dot by 3–5 points, then test again.</p></div></div>
+      <div class="step"><div class="step-number">↔</div><div><strong>Aim feels shaky</strong><p>Try a smaller drag, a more comfortable fire-button size, or slightly lower sensitivity.</p></div></div>
+      <div class="step"><div class="step-number">✓</div><div><strong>Results feel consistent</strong><p>Keep the profile unchanged for a few matches before making more adjustments.</p></div></div>
+      <p class="note">These are general practice tips, not guaranteed outcomes. Performance also depends on FPS, latency, weapon, distance, and practice.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="section" id="tools">
+<div class="container">
+  <div class="section-heading">
+    <span class="eyebrow">Extra Tools</span>
+    <h2>More Gaming Tools</h2>
+    <p>Useful extras for your gaming setup.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="card tool-card">
+      <div class="tool-icon">🪪</div>
+      <h3>Nickname Generator</h3>
+      <p>Generate a gaming nickname with a few taps.</p>
+      <div class="field">
+        <label for="nickName">Your name or word</label>
+        <input type="text" id="nickName" maxlength="18" placeholder="Enter a name">
+      </div>
+      <button class="btn btn-primary" id="nickBtn">Generate Nickname</button>
+      <div class="result-box" id="nickResult" style="display:none">
+        <strong id="nickOutput"></strong>
+        <button class="btn btn-secondary" id="copyNick" style="width:100%;margin-top:10px">Copy Nickname</button>
+      </div>
+    </div>
+
+    <div class="card tool-card">
+      <div class="tool-icon">📶</div>
+      <h3>Ping & FPS Tips</h3>
+      <p>Use a stable connection, close unnecessary downloads, and choose a game graphics/FPS combination your device can maintain smoothly.</p>
+      <ul class="small">
+        <li>Prefer a stable network over switching networks mid-match.</li>
+        <li>Close background apps if performance drops.</li>
+        <li>Keep your phone cool during long sessions.</li>
+        <li>Use supported in-game graphics and FPS options.</li>
+      </ul>
+    </div>
+
+    <div class="card tool-card">
+      <div class="tool-icon">💾</div>
+      <h3>Profile Backup</h3>
+      <p>Your saved profile is stored locally in your browser on this device. It is not automatically uploaded to a server.</p>
+      <button class="btn btn-secondary" id="exportBtn" style="width:100%">Export Profile JSON</button>
+      <p class="small">Keep the exported file if you want to save a separate backup.</p>
+    </div>
+  </div>
+</div>
+</section>
+</main>
+
+<footer>
+  <div class="container footer-row">
+    <div><strong>LAWANGEN <span style="color:var(--red)">FF</span></strong><br>Gaming tools for practice and personalization.</div>
+    <div>Fan-made project • Not affiliated with Garena or Free Fire MAX.<br>© <span id="year"></span> LAWANGEN FF</div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+let currentProfile = null;
+let activePreset = "headshot";
+
+const BASE = {
+  general: 180,
+  redDot: 170,
+  scope2: 160,
+  scope4: 145,
+  sniper: 85,
+  freeLook: 145
 };
+
+const DEVICE_ADJUSTMENT = {
+  iphone14pm: 0,
+  iphone: -3,
+  android: -5,
+  tablet: -10
+};
+
+const STYLE_ADJUSTMENT = {
+  headshot: 8,
+  balanced: 0,
+  rush: 5,
+  steady: -10
+};
+
+const EXPERIENCE_ADJUSTMENT = {
+  beginner: -8,
+  intermediate: 0,
+  advanced: 4
+};
+
+const PRESET_STYLE = {
+  headshot: "headshot",
+  balanced: "balanced",
+  steady: "steady"
+};
+
+function showToast(message) {
+  const toast = $("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"), 2400);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function readProfile() {
+  return {
+    device: $("device").value,
+    style: $("style").value,
+    experience: $("experience").value,
+    fingers: $("fingers").value,
+    touch: Number($("touch").value),
+    fireSize: Number($("fireSize").value)
+  };
+}
+
+function calculateSettings(profile) {
+  const deviceAdj = DEVICE_ADJUSTMENT[profile.device] ?? 0;
+  const styleAdj = STYLE_ADJUSTMENT[profile.style] ?? 0;
+  const expAdj = EXPERIENCE_ADJUSTMENT[profile.experience] ?? 0;
+  const touchAdj = (profile.touch - 3) * 4;
+
+  const generalAdj = deviceAdj + styleAdj + expAdj + touchAdj;
+
+  return {
+    general: clamp(BASE.general + generalAdj, 0, 200),
+    redDot: clamp(BASE.redDot + generalAdj - 5, 0, 200),
+    scope2: clamp(BASE.scope2 + generalAdj - 10, 0, 200),
+    scope4: clamp(BASE.scope4 + generalAdj - 15, 0, 200),
+    sniper: clamp(BASE.sniper + Math.round(generalAdj * 0.35), 0, 200),
+    freeLook: clamp(BASE.freeLook + generalAdj - 5, 0, 200)
+  };
+}
+
+function updateProfile() {
+  const profile = readProfile();
+  const settings = calculateSettings(profile);
+
+  currentProfile = {
+    ...profile,
+    settings,
+    updatedAt: new Date().toISOString()
+  };
+
+  Object.entries(settings).forEach(([key, value]) => {
+    const idMap = {
+      general: "generalVal",
+      redDot: "redDotVal",
+      scope2: "scope2Val",
+      scope4: "scope4Val",
+      sniper: "sniperVal",
+      freeLook: "freeLookVal"
+    };
+    $(idMap[key]).textContent = value;
+  });
+
+  $("fireLabel").textContent = profile.fireSize + "%";
+  $("touchLabel").textContent = profile.touch + " / 5";
+  $("fireRec").textContent = profile.fireSize + "%";
+  $("fingerRec").textContent = profile.fingers + " fingers";
+
+  document.querySelectorAll("[data-preset]").forEach(button => {
+    button.classList.toggle("active", button.dataset.preset === profile.style);
+  });
+}
+
+function applyPreset(preset) {
+  if (!STYLE_ADJUSTMENT.hasOwnProperty(preset)) return;
+  activePreset = preset;
+  $("style").value = preset;
+  updateProfile();
+}
+
+function getProfileText() {
+  if (!currentProfile) updateProfile();
+  const p = currentProfile;
+  return [
+    "LAWANGEN FF — Sensitivity Profile",
+    "Device: " + $("device").selectedOptions[0].textContent,
+    "Style: " + $("style").selectedOptions[0].textContent,
+    "Experience: " + $("experience").selectedOptions[0].textContent,
+    "Finger Layout: " + p.fingers + " fingers",
+    "",
+    "General: " + p.settings.general,
+    "Red Dot: " + p.settings.redDot,
+    "2x Scope: " + p.settings.scope2,
+    "4x Scope: " + p.settings.scope4,
+    "Sniper Scope: " + p.settings.sniper,
+    "Free Look: " + p.settings.freeLook,
+    "Fire Button Size: " + p.fireSize + "%",
+    "",
+    "Enter these values manually in Free Fire MAX.",
+    "Fan-made suggestions; no game modification or injector."
+  ].join("\n");
+}
+
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      const success = document.execCommand("copy");
+      area.remove();
+      if (!success) throw new Error("Copy unavailable");
+    }
+    showToast("Copied to clipboard!");
+  } catch {
+    showToast("Copy failed. Please select and copy manually.");
+  }
+}
+
+function saveProfile() {
+  updateProfile();
+  try {
+    localStorage.setItem("lawangenFFProfile", JSON.stringify(currentProfile));
+    showToast("Profile saved on this device!");
+  } catch {
+    showToast("Could not save profile in this browser.");
+  }
+}
+
+function loadProfile() {
+  try {
+    const saved = localStorage.getItem("lawangenFFProfile");
+    if (!saved) {
+      showToast("No saved profile found.");
+      return;
+    }
+
+    const p = JSON.parse(saved);
+    if (!p || !p.settings) throw new Error("Invalid profile");
+
+    $("device").value = DEVICE_ADJUSTMENT.hasOwnProperty(p.device) ? p.device : "iphone14pm";
+    $("style").value = STYLE_ADJUSTMENT.hasOwnProperty(p.style) ? p.style : "headshot";
+    $("experience").value = EXPERIENCE_ADJUSTMENT.hasOwnProperty(p.experience) ? p.experience : "intermediate";
+    $("fingers").value = ["2", "3", "4"].includes(String(p.fingers)) ? String(p.fingers) : "3";
+    $("touch").value = clamp(Number(p.touch) || 3, 1, 5);
+    $("fireSize").value = clamp(Number(p.fireSize) || 48, 35, 65);
+
+    updateProfile();
+    showToast("Saved profile loaded!");
+  } catch {
+    showToast("Could not read the saved profile.");
+  }
+}
+
+function exportProfile() {
+  updateProfile();
+  const data = JSON.stringify(currentProfile, null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "lawangen-ff-profile.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast("Profile export started.");
+}
+
+$("generateBtn").addEventListener("click", () => {
+  updateProfile();
+  showToast("Your starting profile is ready!");
+});
+
+$("saveBtn").addEventListener("click", saveProfile);
+$("loadBtn").addEventListener("click", loadProfile);
+$("copyBtn").addEventListener("click", () => copyText(getProfileText()));
+$("exportBtn").addEventListener("click", exportProfile);
+
+["device", "style", "experience", "fingers", "touch", "fireSize"].forEach(id => {
+  $(id).addEventListener("input", updateProfile);
+  $(id).addEventListener("change", updateProfile);
+});
+
+document.querySelectorAll("[data-preset]").forEach(button => {
+  button.addEventListener("click", () => applyPreset(button.dataset.preset));
+});
+
+// HUD checklist: save each checked state locally.
+const hudChecks = [...document.querySelectorAll("[data-hud]")];
+
+function updateHudProgress() {
+  const done = hudChecks.filter(item => item.checked).length;
+  const percent = (done / hudChecks.length) * 100;
+  $("hudProgress").style.width = percent + "%";
+  $("progressText").textContent = done + " of " + hudChecks.length + " completed";
+
+  try {
+    const state = {};
+    hudChecks.forEach(item => state[item.dataset.hud] = item.checked);
+    localStorage.setItem("lawangenFFHud", JSON.stringify(state));
+  } catch {}
+}
+
+function loadHudProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("lawangenFFHud") || "{}");
+    hudChecks.forEach(item => {
+      item.checked = Boolean(saved[item.dataset.hud]);
+    });
+  } catch {}
+  updateHudProgress();
+}
+
+hudChecks.forEach(item => item.addEventListener("change", updateHudProgress));
+
+$("resetHud").addEventListener("click", () => {
+  hudChecks.forEach(item => item.checked = false);
+  updateHudProgress();
+  showToast("HUD checklist reset.");
+});
+
+// Nickname generator.
+const nickDecorations = [
+  name => "亗" + name + "亗",
+  name => "么" + name + "么",
+  name => "乂" + name + "乂",
+  name => "『" + name + "』",
+  name => "ツ" + name + "ツ",
+  name => "꧁" + name + "꧂",
+  name => "メ" + name + "メ",
+  name => "〆" + name
+];
+
+$("nickBtn").addEventListener("click", () => {
+  const input = $("nickName").value.trim().replace(/\s+/g, "");
+  if (!input) {
+    showToast("Enter a name or word first.");
+    $("nickName").focus();
+    return;
+  }
+
+  const clean = [...input].slice(0, 12).join("");
+  const generator = nickDecorations[Math.floor(Math.random() * nickDecorations.length)];
+  $("nickOutput").textContent = generator(clean);
+  $("nickResult").style.display = "block";
+});
+
+$("copyNick").addEventListener("click", () => {
+  copyText($("nickOutput").textContent);
+});
+
+// Mobile navigation.
+$("menuBtn").addEventListener("click", () => {
+  $("navLinks").classList.toggle("open");
+});
+
+document.querySelectorAll("#navLinks a").forEach(link => {
+  link.addEventListener("click", () => $("navLinks").classList.remove("open"));
+});
+
+$("year").textContent = new Date().getFullYear();
+
+updateProfile();
+loadHudProgress();
+</script>
+</body>
+</html>
